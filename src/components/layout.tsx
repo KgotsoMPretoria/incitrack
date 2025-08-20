@@ -1,8 +1,16 @@
 // src/components/layout.tsx
 import Link from "next/link";
 import { ReactNode } from "react";
+import { auth, signOut } from "@/auth";
 
-export default function Layout({ children }: { children: ReactNode }) {
+export default async function Layout({ children }: { children: ReactNode }) {
+    const session = await auth();
+
+    async function doSignOut() {
+        "use server";
+        await signOut({ redirectTo: "/login" });
+    }
+
     return (
         <div className="flex min-h-screen bg-gray-50">
             {/* Sidebar */}
@@ -22,6 +30,23 @@ export default function Layout({ children }: { children: ReactNode }) {
                         Settings
                     </Link>
                 </nav>
+
+                <div className="mt-8 border-t pt-4">
+                    {session?.user ? (
+                        <form action={doSignOut}>
+                            <button
+                                type="submit"
+                                className="text-sm text-red-600 hover:text-red-700"
+                            >
+                                Sign out ({session.user.role})
+                            </button>
+                        </form>
+                    ) : (
+                        <Link href="/login" className="text-sm text-blue-600 hover:underline">
+                            Sign in
+                        </Link>
+                    )}
+                </div>
             </aside>
 
             {/* Main content */}
